@@ -1,0 +1,556 @@
+.home-container {
+  min-height: 100vh;
+  background-color: #ffffff;
+  position: relative;
+}
+
+.home-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 40px;
+  border-bottom: 1px solid #e5e5e5;
+  background-color: #ffffff;
+}
+
+.home-title {
+  color: #000000;
+  font-size: 24px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.logout-button {
+  padding: 10px 20px;
+  background-color: #000000;
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.logout-button:hover {
+  background-color: #333333;
+}
+
+.home-content {
+  padding: 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Description Section */
+.description-section {
+  margin-bottom: 40px;
+  padding: 30px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  border: 1px solid #e5e5e5;
+}
+
+.section-title {
+  color: #000000;
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.description-text {
+  color: #333333;
+  font-size: 16px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* Action Buttons Section */
+.action-buttons-section {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 40px;
+  flex-wrap: wrap;
+}
+
+.action-button {
+  flex: 1;
+  min-width: 200px;
+  padding: 20px 40px;
+  font-size: 18px;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.create-button {
+  background-color: #000000;
+  color: #ffffff;
+}
+
+.create-button:hover {
+  background-color: #333333;
+}
+
+.join-button {
+  background-color: #ffffff;
+  color: #000000;
+  border: 2px solid #000000;
+}
+
+.join-button:hover {
+  background-color: #f5f5f5;
+}
+
+/* Share Section */
+.share-section {
+  margin-bottom: 40px;
+  padding: 30px;
+  background-color: #f0f8ff;
+  border-radius: 8px;
+  border: 2px solid #000000;
+}
+
+.share-title {
+  color: #000000;
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+.share-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.share-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.share-label {
+  color: #333333;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.share-code-container,
+.share-link-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.share-code {
+  font-family: 'Courier New', monospace;
+  font-size: 18px;
+  font-weight: 600;
+  color: #000000;
+  background-color: #ffffff;
+  padding: 8px 16px;
+  border-radius: 4px;
+  border: 1px solid #d1d1d1;
+}
+
+.share-link {
+  font-size: 14px;
+  color: #333333;
+  word-break: break-all;
+  flex: 1;
+  min-width: 200px;
+}
+
+.copy-button {
+  padding: 8px 16px;
+  background-color: #000000;
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  white-space: nowrap;
+}
+
+.copy-button:hover {
+  background-color: #333333;
+}
+
+.close-share-button {
+  padding: 8px 16px;
+  background-color: #666666;
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.close-share-button:hover {
+  background-color: #888888;
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.modal-content {
+  background-color: #ffffff;
+  border-radius: 8px;
+  padding: 30px;
+  width: 100%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.modal-close-button {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: none;
+  border: none;
+  font-size: 32px;
+  color: #666666;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+}
+
+.modal-close-button:hover {
+  color: #000000;
+}
+
+.modal-title {
+  color: #000000;
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 24px;
+  margin-right: 40px;
+}
+
+.league-form,
+.join-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  color: #333333;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.form-input {
+  padding: 12px;
+  border: 1px solid #d1d1d1;
+  border-radius: 4px;
+  font-size: 16px;
+  color: #000000;
+  background-color: #ffffff;
+  transition: border-color 0.2s;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #666666;
+}
+
+.form-input:disabled {
+  background-color: #f5f5f5;
+  cursor: not-allowed;
+}
+
+.radio-group {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.radio-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  color: #333333;
+  font-size: 16px;
+}
+
+.radio-label input[type="radio"] {
+  cursor: pointer;
+}
+
+.radio-label input[type="radio"]:disabled {
+  cursor: not-allowed;
+}
+
+.teams-checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  color: #333333;
+  font-size: 16px;
+}
+
+.checkbox-label input[type="checkbox"] {
+  cursor: pointer;
+  width: 18px;
+  height: 18px;
+}
+
+.checkbox-label input[type="checkbox"]:disabled {
+  cursor: not-allowed;
+}
+
+.error-message {
+  background-color: #fee;
+  color: #c33;
+  padding: 12px;
+  border-radius: 4px;
+  font-size: 14px;
+  border: 1px solid #fcc;
+}
+
+.success-message {
+  background-color: #efe;
+  color: #3c3;
+  padding: 12px;
+  border-radius: 4px;
+  font-size: 14px;
+  border: 1px solid #cfc;
+}
+
+.submit-button {
+  padding: 12px 24px;
+  background-color: #000000;
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  width: 100%;
+}
+
+.submit-button:hover:not(:disabled) {
+  background-color: #333333;
+}
+
+.submit-button:disabled {
+  background-color: #666666;
+  cursor: not-allowed;
+}
+
+/* User Leagues Section */
+.user-leagues-section {
+  margin-bottom: 40px;
+}
+
+.loading-text,
+.no-leagues-text {
+  color: #666666;
+  font-size: 16px;
+  text-align: center;
+  padding: 40px;
+}
+
+.leagues-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.league-card {
+  padding: 20px;
+  background-color: #ffffff;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  transition: box-shadow 0.2s;
+}
+
+.league-card:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.league-card-name {
+  color: #000000;
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0 0 12px 0;
+}
+
+.league-card-details {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.league-card-type {
+  color: #333333;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.league-card-code {
+  color: #666666;
+  font-size: 14px;
+  font-family: 'Courier New', monospace;
+}
+
+.league-card-teams {
+  color: #666666;
+  font-size: 14px;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .home-header {
+    padding: 15px 20px;
+  }
+
+  .home-title {
+    font-size: 20px;
+  }
+
+  .logout-button {
+    padding: 8px 16px;
+    font-size: 12px;
+  }
+
+  .home-content {
+    padding: 20px;
+  }
+
+  .description-section {
+    padding: 20px;
+  }
+
+  .section-title {
+    font-size: 20px;
+  }
+
+  .description-text {
+    font-size: 14px;
+  }
+
+  .action-buttons-section {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .action-button {
+    min-width: 100%;
+    padding: 16px 32px;
+    font-size: 16px;
+  }
+
+  .modal-content {
+    padding: 20px;
+    max-width: 100%;
+    margin: 20px;
+  }
+
+  .modal-title {
+    font-size: 20px;
+    margin-bottom: 20px;
+  }
+
+  .modal-close-button {
+    top: 10px;
+    right: 10px;
+    font-size: 28px;
+  }
+
+  .leagues-list {
+    grid-template-columns: 1fr;
+  }
+
+  .share-section {
+    padding: 20px;
+  }
+
+  .share-code-container,
+  .share-link-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .copy-button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .home-header {
+    padding: 12px 15px;
+  }
+
+  .home-title {
+    font-size: 18px;
+  }
+
+  .home-content {
+    padding: 15px;
+  }
+
+  .description-section {
+    padding: 15px;
+  }
+
+  .action-button {
+    padding: 14px 24px;
+    font-size: 15px;
+  }
+
+  .modal-content {
+    padding: 15px;
+  }
+}

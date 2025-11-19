@@ -1,6 +1,6 @@
 # frisbee-games
 
-## Setup
+## Backend Setup
 
 1. Install dependencies:
    ```bash
@@ -21,6 +21,37 @@
    ```
    
    The script will automatically discover all environment variables ending with `_EXPORT_URL` and process each team's CSV data.
+
+## Frontend Setup
+
+1. Navigate to the frontend directory:
+   ```bash
+   cd frontend
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Set up environment variables:
+   Create a `.env.frontend` file in the `frontend/` directory (you can copy from `.env.frontend.example`):
+   ```bash
+   VITE_SUPABASE_URL="your-supabase-project-url"
+   VITE_SUPABASE_ANON_KEY="your-supabase-anon-key"
+   ```
+   
+   **Note:** The `VITE_SUPABASE_ANON_KEY` is different from the backend's `SUPABASE_KEY`. The anon key is safe to use in the frontend and is available in your Supabase project settings under API keys.
+
+4. Run the development server:
+   ```bash
+   npm run dev
+   ```
+
+5. Build for production:
+   ```bash
+   npm run build
+   ```
 
 ## Running Scripts
 
@@ -61,3 +92,19 @@ To enable the automated workflow, add the following secrets to your GitHub repos
    ```
 
 The workflow will run automatically on schedule (every Tuesday at noon US Central Time), or you can trigger it manually from the **Actions** tab in GitHub.
+
+## Frontend Deployment
+
+The frontend is automatically deployed to GitHub Pages when changes are pushed to the `main` branch in the `frontend/` directory.
+
+### Setting up GitHub Pages
+
+1. Enable GitHub Pages in your repository settings:
+   - Go to **Settings** → **Pages**
+   - Under "Source", select **GitHub Actions**
+
+2. Add the following secrets to your GitHub repository (Settings → Secrets and variables → Actions):
+   - `VITE_SUPABASE_URL` - Your Supabase project URL
+   - `VITE_SUPABASE_ANON_KEY` - Your Supabase anon key (found in Supabase project settings under API keys)
+
+The frontend will be automatically deployed to GitHub Pages after each push to the main branch.
