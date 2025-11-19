@@ -20,5 +20,11 @@ export default defineConfig({
       '@': resolve(__dirname, './src'),
     },
     extensions: ['.mjs', '.js', '.mts', '.ts', '.jsx', '.tsx', '.json'],
+    // Ensure Vite resolves TypeScript files correctly
+    mainFields: ['module', 'main'],
+  },
+  // Ensure proper handling of TypeScript files
+  esbuild: {
+    target: 'es2022',
   },
 })
