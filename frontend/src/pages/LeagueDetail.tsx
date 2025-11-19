@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { supabase } from '../lib/supabase'
-import { LEAGUE_TYPES, type LeagueType } from '../lib/constants'
-import { calculateFantasyScore, copyToClipboard } from '../lib/utils'
+import { supabase } from '@/lib/supabase'
+import { LEAGUE_TYPES, type LeagueType } from '@/lib/constants'
+import { calculateFantasyScore, copyToClipboard } from '@/lib/utils'
 import './LeagueDetail.css'
 
 interface League {
