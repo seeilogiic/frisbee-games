@@ -10,4 +10,10 @@ dotenv.config({ path: resolve(process.cwd(), '.env.frontend') })
 export default defineConfig({
   plugins: [react()],
   base: process.env.GITHUB_PAGES_BASE || '/',
+  resolve: {
+    alias: {
+      '@': resolve(__dirname, './src'),
+    },
+    extensions: ['.mjs', '.js', '.mts', '.ts', '.jsx', '.tsx', '.json'],
+  },
 })
