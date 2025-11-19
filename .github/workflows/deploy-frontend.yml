@@ -33,6 +33,12 @@ jobs:
         working-directory: ./frontend
         run: npm ci
 
+      - name: Verify files exist
+        working-directory: ./frontend
+        run: |
+          ls -la src/lib/
+          cat src/lib/supabase.ts | head -5
+
       - name: Build
         working-directory: ./frontend
         env:
