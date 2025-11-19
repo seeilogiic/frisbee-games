@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { AVAILABLE_TEAMS, LEAGUE_TYPES, type LeagueType, type TeamName } from '@/lib/constants'
-import { generateLeagueCode, copyToClipboard } from '@/lib/utils'
+import { generateLeagueCode, copyToClipboard, getBaseUrl } from '@/lib/utils'
 import './Home.css'
 
 interface League {
@@ -250,7 +250,7 @@ export default function Home() {
   const handleCopyShareLink = async () => {
     if (!createdLeague) return
     
-    const shareLink = `${window.location.origin}/#/join?code=${createdLeague.code}`
+    const shareLink = `${getBaseUrl()}/#/join?code=${createdLeague.code}`
     await copyToClipboard(shareLink)
     alert('Share link copied to clipboard!')
   }
@@ -334,7 +334,7 @@ export default function Home() {
                 <label className="share-label">Share Link:</label>
                 <div className="share-link-container">
                   <span className="share-link">
-                    {window.location.origin}/#/join?code={createdLeague.code}
+                    {getBaseUrl()}/#/join?code={createdLeague.code}
                   </span>
                   <button onClick={handleCopyShareLink} className="copy-button">
                     Copy Link

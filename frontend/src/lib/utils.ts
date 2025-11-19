@@ -38,6 +38,18 @@ export async function copyToClipboard(text: string): Promise<void> {
 }
 
 /**
+ * Gets the base URL for the application, including the base path if deployed to a subdirectory
+ * @returns Base URL (e.g., "https://example.com" or "https://example.com/repo-name")
+ */
+export function getBaseUrl(): string {
+  // Use import.meta.env.BASE_URL which Vite provides (includes trailing slash)
+  const basePath = import.meta.env.BASE_URL || '/'
+  // Remove trailing slash and combine with origin
+  const basePathClean = basePath.endsWith('/') ? basePath.slice(0, -1) : basePath
+  return window.location.origin + basePathClean
+}
+
+/**
  * Calculates fantasy score for a player based on their stats
  * Formula: 3 * assists + 3 * goals + 9 * ds - 3 * turnovers
  * Where turnovers = drops + throwaways

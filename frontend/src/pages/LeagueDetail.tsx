@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { LEAGUE_TYPES, type LeagueType } from '@/lib/constants'
-import { calculateFantasyScore, copyToClipboard } from '@/lib/utils'
+import { calculateFantasyScore, copyToClipboard, getBaseUrl } from '@/lib/utils'
 import './LeagueDetail.css'
 
 interface League {
@@ -275,7 +275,7 @@ export default function LeagueDetail() {
   const handleShare = async () => {
     if (!league) return
     
-    const shareLink = `${window.location.origin}/#/join?code=${league.code}`
+    const shareLink = `${getBaseUrl()}/#/join?code=${league.code}`
     await copyToClipboard(shareLink)
     alert('Share link copied to clipboard!')
   }
