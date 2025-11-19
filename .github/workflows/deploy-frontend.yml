@@ -34,10 +34,15 @@ jobs:
         run: npm ci
 
       - name: Verify files exist
-        working-directory: ./frontend
         run: |
-          ls -la src/lib/
-          cat src/lib/supabase.ts | head -5
+          echo "Current directory: $(pwd)"
+          echo "Checking frontend directory structure:"
+          ls -la frontend/ || echo "frontend/ not found"
+          echo "Checking frontend/src/lib/:"
+          ls -la frontend/src/lib/ || echo "frontend/src/lib/ not found"
+          test -f frontend/src/lib/supabase.ts && echo "✓ supabase.ts exists" || echo "✗ supabase.ts not found"
+          test -f frontend/src/lib/constants.ts && echo "✓ constants.ts exists" || echo "✗ constants.ts not found"
+          test -f frontend/src/lib/utils.ts && echo "✓ utils.ts exists" || echo "✗ utils.ts not found"
 
       - name: Build
         working-directory: ./frontend
