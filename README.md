@@ -39,9 +39,12 @@
    ```bash
    VITE_SUPABASE_URL="your-supabase-project-url"
    VITE_SUPABASE_ANON_KEY="your-supabase-anon-key"
+   VITE_SITE_URL="https://yourusername.github.io/frisbee-games"
    ```
    
-   **Note:** The `VITE_SUPABASE_ANON_KEY` is different from the backend's `SUPABASE_KEY`. The anon key is safe to use in the frontend and is available in your Supabase project settings under API keys.
+   **Note:** 
+   - The `VITE_SUPABASE_ANON_KEY` is different from the backend's `SUPABASE_KEY`. The anon key is safe to use in the frontend and is available in your Supabase project settings under API keys.
+   - `VITE_SITE_URL` is required and should be set to your production GitHub Pages URL. This ensures that email verification links always point to your production site, even when developing locally.
 
 4. Run the development server:
    ```bash
