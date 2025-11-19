@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { supabase } from '../lib/supabase'
-import { AVAILABLE_TEAMS, LEAGUE_TYPES, type LeagueType } from '../lib/constants'
-import { generateLeagueCode, copyToClipboard } from '../lib/utils'
+import { supabase } from '../lib/supabase.ts'
+import { AVAILABLE_TEAMS, LEAGUE_TYPES, type LeagueType, type TeamName } from '../lib/constants.ts'
+import { generateLeagueCode, copyToClipboard } from '../lib/utils.ts'
 import './Home.css'
 
 interface League {
@@ -434,7 +434,7 @@ export default function Home() {
               <div className="form-group">
                 <label>Select Teams That Will Be Attending Tournament</label>
                 <div className="teams-checkbox-group">
-                  {AVAILABLE_TEAMS.map(team => (
+                  {AVAILABLE_TEAMS.map((team: TeamName) => (
                     <label key={team} className="checkbox-label">
                       <input
                         type="checkbox"
