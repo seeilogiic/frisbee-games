@@ -77,11 +77,18 @@ export default function SignUp() {
       // Ensure returnTo doesn't start with / to avoid double slashes
       const cleanReturnTo = returnTo?.startsWith('/') ? returnTo.slice(1) : returnTo
       const redirectPath = cleanReturnTo ? `/#/${cleanReturnTo}` : '/#/'
+      const emailRedirectUrl = `${siteUrl}${redirectPath}`
+      
+      // Debug logging
+      console.log('Site URL:', siteUrl)
+      console.log('Email redirect URL:', emailRedirectUrl)
+      console.log('VITE_SITE_URL from env:', import.meta.env.VITE_SITE_URL)
+      
       const { error: signUpError } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: `${siteUrl}${redirectPath}`,
+          emailRedirectTo: emailRedirectUrl,
         },
       })
 

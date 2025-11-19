@@ -60,6 +60,11 @@ export function getSiteUrl(): string {
   // VITE_SITE_URL must be set - this ensures emails always use production URL
   const siteUrl = import.meta.env.VITE_SITE_URL
   
+  // Debug logging
+  console.log('getSiteUrl() called')
+  console.log('import.meta.env.VITE_SITE_URL:', import.meta.env.VITE_SITE_URL)
+  console.log('All VITE_ env vars:', Object.keys(import.meta.env).filter(k => k.startsWith('VITE_')))
+  
   if (!siteUrl) {
     const errorMessage = 
       'VITE_SITE_URL environment variable is required for email redirects.\n' +
@@ -69,6 +74,7 @@ export function getSiteUrl(): string {
     throw new Error(errorMessage)
   }
   
+  console.log('Returning siteUrl:', siteUrl)
   return siteUrl
 }
 
