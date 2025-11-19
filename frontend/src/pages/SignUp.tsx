@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import type { FormEvent } from 'react'
 import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
+import { getSiteUrl } from '@/lib/utils'
 import './SignUp.css'
 
 interface PasswordRequirements {
@@ -72,11 +73,15 @@ export default function SignUp() {
     setLoading(true)
 
     try {
+      const siteUrl = getSiteUrl()
+      // Ensure returnTo doesn't start with / to avoid double slashes
+      const cleanReturnTo = returnTo?.startsWith('/') ? returnTo.slice(1) : returnTo
+      const redirectPath = cleanReturnTo ? `/#/${cleanReturnTo}` : '/#/'
       const { error: signUpError } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/#/${returnTo || ''}`,
+          emailRedirectTo: `${siteUrl}${redirectPath}`,
         },
       })
 

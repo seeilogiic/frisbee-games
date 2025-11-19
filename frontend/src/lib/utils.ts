@@ -50,6 +50,20 @@ export function getBaseUrl(): string {
 }
 
 /**
+ * Gets the production site URL for email redirects
+ * Uses VITE_SITE_URL if set, otherwise falls back to getBaseUrl()
+ * @returns Production site URL
+ */
+export function getSiteUrl(): string {
+  // Check for explicit site URL environment variable (for production)
+  if (import.meta.env.VITE_SITE_URL) {
+    return import.meta.env.VITE_SITE_URL
+  }
+  // Fallback to current base URL
+  return getBaseUrl()
+}
+
+/**
  * Calculates fantasy score for a player based on their stats
  * Formula: 3 * assists + 3 * goals + 9 * ds - 3 * turnovers
  * Where turnovers = drops + throwaways
