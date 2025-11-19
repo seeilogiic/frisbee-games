@@ -36,6 +36,7 @@ venv.bak/
 .env.*.local
 *.env
 .env.backend
+.env.frontend
 
 # IDE - VSCode
 .vscode/
