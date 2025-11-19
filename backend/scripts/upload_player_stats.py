@@ -5,6 +5,7 @@ Dictionary structure:
 {
     "timestamp": "2024-01-15T10:30:00Z",  # Timestamp from CSV
     "player_name": "John Doe",
+    "player_team": "AUBURN",  # Team name extracted from environment variable
     "game_played": "Game Name",
     "tournament_played": "Tournament Name",
     "goals": 5,
@@ -223,6 +224,7 @@ def calculate_player_stats_from_csv(csv_content: str, team_name: str, players_di
                 record = {
                     "timestamp": player_stats["timestamp"] or "",
                     "player_name": player_name,
+                    "player_team": team_name,
                     "game_played": opponent,  # Using opponent as game identifier
                     "tournament_played": tournament,
                     "goals": player_stats["goals"],
@@ -247,6 +249,7 @@ def upload_player_stats(stats_data: Union[Dict[str, Any], List[Dict[str, Any]]])
     Expected dictionary fields:
     - timestamp: Timestamp from CSV (string or datetime)
     - player_name: Player's name (string)
+    - player_team: Team name (string)
     - game_played: Name of the game (string)
     - tournament_played: Name of the tournament (string)
     - goals: Number of goals (integer)
