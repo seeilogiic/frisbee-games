@@ -28,14 +28,11 @@ jobs:
           pip install -r backend/requirements.txt
       
       # Upload player stats to Supabase
-      # NOTE: Add team export URLs as secrets in GitHub (Settings > Secrets and variables > Actions)
       # Format: {TEAM_NAME}_EXPORT_URL (e.g., AUBURN_EXPORT_URL)
-      # Then add them to the env section below following the same pattern
       - name: Upload player stats to Supabase
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
-          # Add your team export URLs here (uncomment and modify as needed):
           AUBURN_EXPORT_URL: ${{ secrets.AUBURN_EXPORT_URL }}
           ALABAMA_EXPORT_URL: ${{ secrets.ALABAMA_EXPORT_URL }}
         run: |
