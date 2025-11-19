@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { supabase } from '../lib/supabase.ts'
+import { supabase } from '../lib/supabase.js'
 import './JoinLeague.css'
 
 export default function JoinLeague() {

@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { supabase } from '../lib/supabase.ts'
-import { AVAILABLE_TEAMS, LEAGUE_TYPES, type LeagueType, type TeamName } from '../lib/constants.ts'
-import { generateLeagueCode, copyToClipboard } from '../lib/utils.ts'
+import { supabase } from '../lib/supabase.js'
+import { AVAILABLE_TEAMS, LEAGUE_TYPES, type LeagueType, type TeamName } from '../lib/constants.js'
+import { generateLeagueCode, copyToClipboard } from '../lib/utils.js'
 import './Home.css'
 
 interface League {
