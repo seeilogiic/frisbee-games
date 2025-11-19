@@ -15,7 +15,7 @@ interface League {
   created_at: string
 }
 
-interface PlayerStat { 
+interface PlayerStat {
   player_name: string
   player_team: string
   game_played: string
