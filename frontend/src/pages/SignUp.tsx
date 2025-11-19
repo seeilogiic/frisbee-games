@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import type { FormEvent } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import './SignUp.css'
 
@@ -27,16 +27,19 @@ export default function SignUp() {
     hasSpecialChar: false,
   })
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const returnTo = searchParams.get('returnTo')
 
   useEffect(() => {
     const checkUser = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
-        navigate('/')
+        // Redirect to returnTo if provided, otherwise go to home
+        navigate(returnTo || '/', { replace: true })
       }
     }
     checkUser()
-  }, [navigate])
+  }, [navigate, returnTo])
 
   useEffect(() => {
     // Validate password requirements
@@ -73,7 +76,7 @@ export default function SignUp() {
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/#/`,
+          emailRedirectTo: `${window.location.origin}/#/${returnTo || ''}`,
         },
       })
 
@@ -119,7 +122,7 @@ export default function SignUp() {
               resend it
             </button>.
           </p>
-          <Link to="/login" className="back-to-login-link">
+          <Link to={returnTo ? `/login?returnTo=${encodeURIComponent(returnTo)}` : '/login'} className="back-to-login-link">
             Back to Login
           </Link>
         </div>
@@ -198,7 +201,7 @@ export default function SignUp() {
           </button>
         </form>
         <div className="login-link-container">
-          Already have an account? <Link to="/login" className="login-link">Sign in</Link>
+          Already have an account? <Link to={returnTo ? `/login?returnTo=${encodeURIComponent(returnTo)}` : '/login'} className="login-link">Sign in</Link>
         </div>
       </div>
     </div>

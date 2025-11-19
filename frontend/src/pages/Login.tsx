@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import type { FormEvent } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import './Login.css'
 
@@ -10,16 +10,19 @@ export default function Login() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const returnTo = searchParams.get('returnTo')
 
   useEffect(() => {
     const checkUser = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
-        navigate('/')
+        // Redirect to returnTo if provided, otherwise go to home
+        navigate(returnTo || '/', { replace: true })
       }
     }
     checkUser()
-  }, [navigate])
+  }, [navigate, returnTo])
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
@@ -38,7 +41,8 @@ export default function Login() {
         return
       }
 
-      navigate('/')
+      // Redirect to returnTo if provided, otherwise go to home
+      navigate(returnTo || '/', { replace: true })
     } catch (err) {
       setError('An unexpected error occurred')
       setLoading(false)
@@ -80,7 +84,7 @@ export default function Login() {
           </button>
         </form>
         <div className="signup-link-container">
-          Don't have an account? <Link to="/signup" className="signup-link">Sign up</Link>
+          Don't have an account? <Link to={returnTo ? `/signup?returnTo=${encodeURIComponent(returnTo)}` : '/signup'} className="signup-link">Sign up</Link>
         </div>
       </div>
     </div>
