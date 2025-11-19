@@ -51,16 +51,25 @@ export function getBaseUrl(): string {
 
 /**
  * Gets the production site URL for email redirects
- * Uses VITE_SITE_URL if set, otherwise falls back to getBaseUrl()
- * @returns Production site URL
+ * ALWAYS returns the production URL, never localhost
+ * Requires VITE_SITE_URL to be set in environment variables
+ * @returns Production site URL (never localhost)
+ * @throws Error if VITE_SITE_URL is not set
  */
 export function getSiteUrl(): string {
-  // Check for explicit site URL environment variable (for production)
-  if (import.meta.env.VITE_SITE_URL) {
-    return import.meta.env.VITE_SITE_URL
+  // VITE_SITE_URL must be set - this ensures emails always use production URL
+  const siteUrl = import.meta.env.VITE_SITE_URL
+  
+  if (!siteUrl) {
+    const errorMessage = 
+      'VITE_SITE_URL environment variable is required for email redirects.\n' +
+      'Please set VITE_SITE_URL in your .env.frontend file to your production GitHub Pages URL.\n' +
+      'Example: VITE_SITE_URL=https://yourusername.github.io/frisbee-games'
+    console.error(errorMessage)
+    throw new Error(errorMessage)
   }
-  // Fallback to current base URL
-  return getBaseUrl()
+  
+  return siteUrl
 }
 
 /**
