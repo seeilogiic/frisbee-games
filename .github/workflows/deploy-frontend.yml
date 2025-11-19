@@ -56,14 +56,21 @@ jobs:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
           GITHUB_PAGES_BASE: /${{ github.event.repository.name }}/
+          VITE_SITE_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}
         run: |
           echo "Building from directory: $(pwd)"
           echo "Checking vite.config.ts:"
           cat vite.config.ts | head -30
           echo "Checking if lib files exist:"
           ls -la src/lib/ || echo "src/lib/ not found"
+          echo "Checking public directory:"
+          ls -la public/ || echo "public/ not found"
           echo "Running build..."
           npm run build
+          echo "Build complete. Checking dist directory:"
+          ls -la dist/ || echo "dist/ not found"
+          echo "Checking for 404.html:"
+          test -f dist/404.html && echo "✓ 404.html exists in dist" || echo "✗ 404.html not found in dist"
 
       - name: Setup Pages
         uses: actions/configure-pages@v4

@@ -92,8 +92,9 @@ export default function SignUp() {
       }
 
       setSuccess(true)
-    } catch (err) {
-      setError('An unexpected error occurred')
+    } catch (err: any) {
+      // Show the actual error message instead of generic message
+      setError(err?.message || 'An unexpected error occurred')
       setLoading(false)
     }
   }
