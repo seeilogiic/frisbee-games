@@ -31,7 +31,11 @@ jobs:
 
       - name: Install dependencies
         working-directory: ./frontend
-        run: npm ci
+        run: |
+          npm ci
+          # Clear any potential cache issues
+          rm -rf node_modules/.vite
+          rm -rf dist
 
       - name: Verify files exist
         run: |
@@ -50,7 +54,14 @@ jobs:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
           GITHUB_PAGES_BASE: /${{ github.event.repository.name }}/
-        run: npm run build
+        run: |
+          echo "Building from directory: $(pwd)"
+          echo "Checking vite.config.ts:"
+          cat vite.config.ts | head -30
+          echo "Checking if lib files exist:"
+          ls -la src/lib/ || echo "src/lib/ not found"
+          echo "Running build..."
+          npm run build
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
