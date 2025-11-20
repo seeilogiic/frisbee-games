@@ -1,0 +1,371 @@
+.player-detail-container {
+  min-height: 100vh;
+  background-color: #ffffff;
+}
+
+.player-detail-header {
+  border-bottom: 1px solid #e5e5e5;
+  background-color: #ffffff;
+  padding: 20px 40px;
+}
+
+.player-detail-header-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.player-detail-header-left {
+  flex: 1;
+}
+
+.back-button {
+  padding: 8px 16px;
+  background-color: #ffffff;
+  color: #000000;
+  border: 1px solid #d1d1d1;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 16px;
+}
+
+.back-button:hover {
+  background-color: #f5f5f5;
+  border-color: #666666;
+}
+
+.player-detail-title-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.player-detail-title {
+  color: #000000;
+  font-size: 28px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.player-detail-meta {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.player-team-badge {
+  padding: 4px 12px;
+  background-color: #000000;
+  color: #ffffff;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.league-name-link {
+  color: #0066cc;
+  font-size: 14px;
+  cursor: pointer;
+  text-decoration: underline;
+  transition: color 0.2s;
+}
+
+.league-name-link:hover {
+  color: #0052a3;
+}
+
+.player-detail-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px;
+}
+
+.section-title {
+  color: #000000;
+  font-size: 24px;
+  font-weight: 600;
+  margin: 0 0 24px 0;
+}
+
+/* View Toggle */
+.view-toggle-container {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid #e5e5e5;
+  margin-bottom: 24px;
+}
+
+.view-toggle-button {
+  padding: 12px 24px;
+  background-color: transparent;
+  color: #666666;
+  border: none;
+  border-bottom: 2px solid transparent;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: -2px;
+}
+
+.view-toggle-button:hover {
+  color: #000000;
+  background-color: #f9f9f9;
+}
+
+.view-toggle-button.active {
+  color: #000000;
+  border-bottom-color: #000000;
+}
+
+.player-stats-summary {
+  margin-bottom: 32px;
+}
+
+.summary-table-container {
+  overflow-x: auto;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+}
+
+.summary-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #ffffff;
+}
+
+.summary-table thead {
+  background-color: #f9f9f9;
+}
+
+.summary-table th {
+  padding: 12px;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 600;
+  color: #000000;
+  border-bottom: 2px solid #e5e5e5;
+  white-space: nowrap;
+}
+
+.summary-table td {
+  padding: 12px;
+  font-size: 13px;
+  color: #333333;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.summary-table tbody tr.row-even {
+  background-color: #ffffff;
+}
+
+.summary-table tbody tr.row-odd {
+  background-color: #f5f5f5;
+}
+
+.summary-table tbody tr:hover {
+  background-color: #e8e8e8;
+}
+
+.summary-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.stat-name {
+  font-weight: 500;
+  color: #000000;
+}
+
+.stat-value-cell {
+  font-weight: 600;
+  color: #000000;
+}
+
+.stat-league-cell {
+  color: #666666;
+}
+
+.stat-diff-cell {
+  text-align: right;
+}
+
+.stat-diff-inline {
+  font-size: 13px;
+  font-weight: 500;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.stat-diff-inline.positive {
+  color: #006600;
+  background-color: #e6f7e6;
+}
+
+.stat-diff-inline.negative {
+  color: #cc0000;
+  background-color: #ffe6e6;
+}
+
+.player-games-section {
+  margin-top: 48px;
+}
+
+.games-table-container {
+  overflow-x: auto;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+}
+
+.games-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #ffffff;
+}
+
+.games-table thead {
+  background-color: #f9f9f9;
+}
+
+.games-table th {
+  padding: 12px;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 600;
+  color: #000000;
+  border-bottom: 2px solid #e5e5e5;
+  white-space: nowrap;
+}
+
+.games-table td {
+  padding: 12px;
+  font-size: 13px;
+  color: #333333;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.games-table tbody tr.row-even {
+  background-color: #ffffff;
+}
+
+.games-table tbody tr.row-odd {
+  background-color: #f5f5f5;
+}
+
+.games-table tbody tr:hover {
+  background-color: #e8e8e8;
+}
+
+.games-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.score-cell {
+  font-weight: 600;
+  color: #000000;
+}
+
+.loading-text,
+.no-data-text,
+.error-message {
+  padding: 40px;
+  text-align: center;
+  color: #666666;
+  font-size: 16px;
+}
+
+.error-message {
+  color: #cc0000;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .player-detail-header {
+    padding: 15px 20px;
+  }
+
+  .player-detail-header-content {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .player-detail-content {
+    padding: 20px;
+  }
+
+  .player-detail-title {
+    font-size: 24px;
+  }
+
+  .view-toggle-container {
+    overflow-x: auto;
+  }
+
+  .view-toggle-button {
+    padding: 10px 16px;
+    font-size: 14px;
+    white-space: nowrap;
+  }
+
+  .summary-table-container {
+    overflow-x: scroll;
+  }
+
+  .summary-table {
+    min-width: 500px;
+  }
+
+  .summary-table th,
+  .summary-table td {
+    padding: 8px;
+    font-size: 12px;
+  }
+
+  .games-table-container {
+    overflow-x: scroll;
+  }
+
+  .games-table {
+    min-width: 700px;
+  }
+
+  .games-table th,
+  .games-table td {
+    padding: 8px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .player-detail-header {
+    padding: 12px 15px;
+  }
+
+  .back-button {
+    padding: 8px 16px;
+    font-size: 13px;
+  }
+
+  .player-detail-content {
+    padding: 15px;
+  }
+
+  .player-detail-title {
+    font-size: 20px;
+  }
+
+  .section-title {
+    font-size: 20px;
+  }
+
+  .summary-table {
+    min-width: 100%;
+  }
+}
+
