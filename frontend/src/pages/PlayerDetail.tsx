@@ -2,7 +2,12 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { LEAGUE_TYPES, type LeagueType } from '@/lib/constants'
-import { calculateFantasyScore } from '@/lib/utils'
+import { 
+  calculateFantasyScore,
+  getMostRecentTournamentStats,
+  calculatePlayerPrices,
+  type PlayerStat as UtilsPlayerStat
+} from '@/lib/utils'
 import './PlayerDetail.css'
 
 interface League {
@@ -67,6 +72,16 @@ interface GameStats {
   timestamp?: string
 }
 
+interface SalaryCapStats {
+  price: number
+  captain_score: number
+  handler_score: number
+  cutter_score: number
+  defender_score: number
+  most_recent_tournament: string
+  games_played_at_tournament: number
+}
+
 export default function PlayerDetail() {
   const { leagueId, playerName } = useParams<{ leagueId: string; playerName: string }>()
   const navigate = useNavigate()
@@ -78,6 +93,8 @@ export default function PlayerDetail() {
   const [gameStats, setGameStats] = useState<GameStats[]>([])
   const [loadingStats, setLoadingStats] = useState(false)
   const [activeView, setActiveView] = useState<'summary' | 'games'>('summary')
+  const [salaryCapStats, setSalaryCapStats] = useState<SalaryCapStats | null>(null)
+  const [allLeaguePlayerStats, setAllLeaguePlayerStats] = useState<PlayerStat[]>([])
 
   useEffect(() => {
     if (leagueId) {
@@ -86,7 +103,7 @@ export default function PlayerDetail() {
   }, [leagueId])
 
   useEffect(() => {
-    if (league && playerName && league.type === LEAGUE_TYPES.DRAFT && league.teams.length > 0) {
+    if (league && playerName && league.teams.length > 0) {
       loadPlayerStats()
     }
   }, [league, playerName])
@@ -138,11 +155,12 @@ export default function PlayerDetail() {
 
       if (playerStatsError) throw playerStatsError
 
-      // Fetch all player stats for all players in teams from this league (for league averages)
+      // Fetch all player stats for all players in teams from this league (for league averages and price calculation)
       const { data: leagueData, error: leagueStatsError } = await supabase
         .from('player_stats')
         .select('*')
         .in('player_team', league.teams)
+        .order('timestamp', { ascending: false })
 
       if (leagueStatsError) throw leagueStatsError
 
@@ -150,10 +168,13 @@ export default function PlayerDetail() {
         setAggregatedStats(null)
         setGameStats([])
         setLeagueAverages(null)
+        setSalaryCapStats(null)
         return
       }
 
       const playerStats = playerData as PlayerStat[]
+      const allLeagueStats = (leagueData || []) as PlayerStat[]
+      setAllLeaguePlayerStats(allLeagueStats)
 
       // Aggregate stats for summary
       const aggregated = aggregatePlayerStats(playerStats)
@@ -164,10 +185,16 @@ export default function PlayerDetail() {
       setGameStats(gameStatsList)
 
       // Calculate league averages
-      if (leagueData && leagueData.length > 0) {
-        const leagueStats = leagueData as PlayerStat[]
-        const leagueAvg = calculateLeagueAverages(leagueStats)
+      if (allLeagueStats.length > 0) {
+        const leagueAvg = calculateLeagueAverages(allLeagueStats)
         setLeagueAverages(leagueAvg)
+      }
+
+      // Calculate salary cap stats if it's a salary cap league
+      if (league.type === LEAGUE_TYPES.SALARY_CAP) {
+        calculateSalaryCapStats(playerStats, allLeagueStats)
+      } else {
+        setSalaryCapStats(null)
       }
     } catch (err: any) {
       console.error('Error loading player stats:', err)
@@ -348,6 +375,60 @@ export default function PlayerDetail() {
     }
   }
 
+  const calculateSalaryCapStats = (playerStats: PlayerStat[], allLeagueStats: PlayerStat[]) => {
+    // Get most recent tournament stats for this player
+    const mostRecentStats = getMostRecentTournamentStats(playerStats as UtilsPlayerStat[])
+    
+    if (!mostRecentStats) {
+      setSalaryCapStats(null)
+      return
+    }
+
+    // Group all league stats by player to calculate prices
+    const playerStatsMap = new Map<string, PlayerStat[]>()
+    
+    allLeagueStats.forEach(stat => {
+      const key = `${stat.player_name}|${stat.player_team}`
+      if (!playerStatsMap.has(key)) {
+        playerStatsMap.set(key, [])
+      }
+      playerStatsMap.get(key)!.push(stat)
+    })
+
+    // Get most recent tournament stats for all players to calculate prices
+    const playerScores: Array<{ player_name: string; player_team: string; captain_score: number }> = []
+    
+    playerStatsMap.forEach((playerStatList, key) => {
+      const [player_name, player_team] = key.split('|')
+      const playerMostRecentStats = getMostRecentTournamentStats(playerStatList as UtilsPlayerStat[])
+      
+      if (playerMostRecentStats) {
+        playerScores.push({
+          player_name,
+          player_team,
+          captain_score: playerMostRecentStats.captain_score,
+        })
+      }
+    })
+
+    // Calculate prices using min-max scaling
+    const priceMap = calculatePlayerPrices(playerScores)
+    
+    // Get price for this player
+    const playerKey = `${playerStats[0].player_name}|${playerStats[0].player_team}`
+    const price = priceMap.get(playerKey) || 0
+
+    setSalaryCapStats({
+      price,
+      captain_score: mostRecentStats.captain_score,
+      handler_score: 0, // Placeholder
+      cutter_score: 0, // Placeholder
+      defender_score: 0, // Placeholder
+      most_recent_tournament: mostRecentStats.tournament_name,
+      games_played_at_tournament: mostRecentStats.games_played,
+    })
+  }
+
   const groupStatsByGame = (stats: PlayerStat[]): GameStats[] => {
     const gameMap = new Map<string, GameStats>()
 
@@ -476,8 +557,55 @@ export default function PlayerDetail() {
 
             {/* Summary Stats Section */}
             {activeView === 'summary' && (
-              <section className="player-stats-summary">
-                <h2 className="section-title">Season Summary</h2>
+              <>
+                {/* Salary Cap Stats Section */}
+                {league.type === LEAGUE_TYPES.SALARY_CAP && salaryCapStats && (
+                  <section className="player-stats-summary salary-cap-stats">
+                    <h2 className="section-title">Salary Cap Stats</h2>
+                    <div className="summary-table-container">
+                      <table className="summary-table">
+                        <thead>
+                          <tr>
+                            <th>Stat</th>
+                            <th>Value</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr className="row-even">
+                            <td className="stat-name">Price</td>
+                            <td className="stat-value-cell">${salaryCapStats.price.toFixed(2)}</td>
+                          </tr>
+                          <tr className="row-odd">
+                            <td className="stat-name">Captain Score</td>
+                            <td className="stat-value-cell">{salaryCapStats.captain_score.toFixed(1)}</td>
+                          </tr>
+                          <tr className="row-even">
+                            <td className="stat-name">Handler Score</td>
+                            <td className="stat-value-cell">{salaryCapStats.handler_score.toFixed(1)}</td>
+                          </tr>
+                          <tr className="row-odd">
+                            <td className="stat-name">Cutter Score</td>
+                            <td className="stat-value-cell">{salaryCapStats.cutter_score.toFixed(1)}</td>
+                          </tr>
+                          <tr className="row-even">
+                            <td className="stat-name">Defender Score</td>
+                            <td className="stat-value-cell">{salaryCapStats.defender_score.toFixed(1)}</td>
+                          </tr>
+                          <tr className="row-odd">
+                            <td className="stat-name">Most Recent Tournament</td>
+                            <td className="stat-value-cell">{salaryCapStats.most_recent_tournament}</td>
+                          </tr>
+                          <tr className="row-even">
+                            <td className="stat-name">Games Played at Tournament</td>
+                            <td className="stat-value-cell">{salaryCapStats.games_played_at_tournament}</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </section>
+                )}
+                <section className="player-stats-summary">
+                  <h2 className="section-title">Season Summary</h2>
                 <div className="summary-table-container">
                   <table className="summary-table">
                     <thead>
@@ -658,6 +786,7 @@ export default function PlayerDetail() {
                   </table>
                 </div>
               </section>
+                </>
             )}
 
             {/* Game-by-Game Table */}
