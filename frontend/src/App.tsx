@@ -40,4 +40,16 @@ function App() {
         />
         <Route
           path="/"
-       
+          element={
+            <ProtectedRoute>
+              <Home />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </HashRouter>
+  )
+}
+
+export default App
