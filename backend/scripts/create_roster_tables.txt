@@ -1,0 +1,48 @@
+-- Create roster_players table
+CREATE TABLE IF NOT EXISTS roster_players (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    league_id UUID NOT NULL REFERENCES leagues(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    player_name TEXT NOT NULL,
+    player_team TEXT NOT NULL,
+    position TEXT NOT NULL CHECK (position IN ('captain', 'handler', 'cutter', 'defender')),
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE(league_id, user_id, player_name, player_team)
+);
+
+-- Create indexes on roster_players
+CREATE INDEX IF NOT EXISTS idx_roster_players_league_id ON roster_players(league_id);
+CREATE INDEX IF NOT EXISTS idx_roster_players_user_id ON roster_players(user_id);
+CREATE INDEX IF NOT EXISTS idx_roster_players_league_user ON roster_players(league_id, user_id);
+
+-- Enable Row Level Security (RLS)
+ALTER TABLE roster_players ENABLE ROW LEVEL SECURITY;
+
+-- RLS Policies for roster_players table
+-- Users can view rosters of leagues they're in
+CREATE POLICY "Users can view rosters of their leagues" ON roster_players
+    FOR SELECT
+    USING (
+        auth.uid() = user_id OR
+        EXISTS (
+            SELECT 1 FROM league_participants
+            WHERE league_participants.league_id = roster_players.league_id
+            AND league_participants.user_id = auth.uid()
+        )
+    );
+
+-- Users can add players to their own roster
+CREATE POLICY "Users can add players to their roster" ON roster_players
+    FOR INSERT
+    WITH CHECK (auth.uid() = user_id);
+
+-- Users can update their own roster
+CREATE POLICY "Users can update their own roster" ON roster_players
+    FOR UPDATE
+    USING (auth.uid() = user_id);
+
+-- Users can remove players from their own roster
+CREATE POLICY "Users can remove players from their roster" ON roster_players
+    FOR DELETE
+    USING (auth.uid() = user_id);
+
