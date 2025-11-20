@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import type { FormEvent } from 'react'
 import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
-import { getSiteUrl } from '@/lib/utils'
 import './SignUp.css'
 
 interface PasswordRequirements {
@@ -19,7 +18,6 @@ export default function SignUp() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
-  const [success, setSuccess] = useState(false)
   const [passwordRequirements, setPasswordRequirements] = useState<PasswordRequirements>({
     minLength: false,
     hasUppercase: false,
@@ -73,23 +71,9 @@ export default function SignUp() {
     setLoading(true)
 
     try {
-      const siteUrl = getSiteUrl()
-      // Ensure returnTo doesn't start with / to avoid double slashes
-      const cleanReturnTo = returnTo?.startsWith('/') ? returnTo.slice(1) : returnTo
-      const redirectPath = cleanReturnTo ? `/#/${cleanReturnTo}` : '/#/'
-      const emailRedirectUrl = `${siteUrl}${redirectPath}`
-      
-      // Debug logging
-      console.log('Site URL:', siteUrl)
-      console.log('Email redirect URL:', emailRedirectUrl)
-      console.log('VITE_SITE_URL from env:', import.meta.env.VITE_SITE_URL)
-      
       const { error: signUpError } = await supabase.auth.signUp({
         email,
         password,
-        options: {
-          emailRedirectTo: emailRedirectUrl,
-        },
       })
 
       if (signUpError) {
@@ -98,49 +82,13 @@ export default function SignUp() {
         return
       }
 
-      setSuccess(true)
+      // Redirect to login page after successful sign-up
+      navigate(returnTo ? `/login?returnTo=${encodeURIComponent(returnTo)}` : '/login', { replace: true })
     } catch (err: any) {
       // Show the actual error message instead of generic message
       setError(err?.message || 'An unexpected error occurred')
       setLoading(false)
     }
-  }
-
-  if (success) {
-    return (
-      <div className="signup-container">
-        <div className="signup-card">
-          <h1 className="signup-title">Check Your Email</h1>
-          <p className="success-message">
-            We've sent a verification email to <strong>{email}</strong>. 
-            Please click the link in the email to verify your account before signing in.
-          </p>
-          <p className="success-submessage">
-            If you don't see the email, check your spam folder or{' '}
-            <button
-              type="button"
-              onClick={async () => {
-                const { error } = await supabase.auth.resend({
-                  type: 'signup',
-                  email,
-                })
-                if (error) {
-                  setError(error.message)
-                } else {
-                  alert('Verification email resent!')
-                }
-              }}
-              className="resend-link"
-            >
-              resend it
-            </button>.
-          </p>
-          <Link to={returnTo ? `/login?returnTo=${encodeURIComponent(returnTo)}` : '/login'} className="back-to-login-link">
-            Back to Login
-          </Link>
-        </div>
-      </div>
-    )
   }
 
   return (
