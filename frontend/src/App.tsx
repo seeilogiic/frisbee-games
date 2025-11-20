@@ -4,6 +4,7 @@ import SignUp from './pages/SignUp'
 import Home from './pages/Home'
 import JoinLeague from './pages/JoinLeague'
 import LeagueDetail from './pages/LeagueDetail'
+import PlayerDetail from './pages/PlayerDetail'
 import ProtectedRoute from './components/ProtectedRoute'
 import './App.css'
 
@@ -26,6 +27,14 @@ function App() {
           element={
             <ProtectedRoute>
               <LeagueDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/player/:leagueId/:playerName"
+          element={
+            <ProtectedRoute>
+              <PlayerDetail />
             </ProtectedRoute>
           }
         />

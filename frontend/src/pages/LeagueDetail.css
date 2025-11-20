@@ -244,6 +244,15 @@
   margin-bottom: 4px;
 }
 
+.clickable-player-name {
+  transition: color 0.2s;
+}
+
+.clickable-player-name:hover {
+  color: #0066cc;
+  text-decoration: underline;
+}
+
 .player-team {
   font-size: 12px;
   color: #666666;

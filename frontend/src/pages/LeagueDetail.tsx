@@ -452,7 +452,13 @@ export default function LeagueDetail() {
                           className={index % 2 === 0 ? 'row-even' : 'row-odd'}
                         >
                           <td className="player-name-cell">
-                            <div className="player-name">{player.player_name}</div>
+                            <div 
+                              className="player-name clickable-player-name"
+                              onClick={() => navigate(`/player/${leagueId}/${encodeURIComponent(player.player_name)}`)}
+                              style={{ cursor: 'pointer' }}
+                            >
+                              {player.player_name}
+                            </div>
                             <div className="player-team">{player.player_team}</div>
                           </td>
                           <td>{player.games_played}</td>
