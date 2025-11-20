@@ -46,6 +46,14 @@ interface AggregatedPlayerStats {
   avg_turnovers: number
 }
 
+interface LeagueAverages extends AggregatedPlayerStats {
+  avg_total_score: number
+  avg_total_goals: number
+  avg_total_assists: number
+  avg_total_ds: number
+  avg_total_turnovers: number
+}
+
 interface GameStats {
   opponent: string
   tournament: string
@@ -66,8 +74,10 @@ export default function PlayerDetail() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [aggregatedStats, setAggregatedStats] = useState<AggregatedPlayerStats | null>(null)
+  const [leagueAverages, setLeagueAverages] = useState<LeagueAverages | null>(null)
   const [gameStats, setGameStats] = useState<GameStats[]>([])
   const [loadingStats, setLoadingStats] = useState(false)
+  const [activeView, setActiveView] = useState<'summary' | 'games'>('summary')
 
   useEffect(() => {
     if (leagueId) {
@@ -119,30 +129,46 @@ export default function PlayerDetail() {
       const decodedPlayerName = decodeURIComponent(playerName)
 
       // Fetch all player stats for this specific player in teams from this league
-      const { data, error: statsError } = await supabase
+      const { data: playerData, error: playerStatsError } = await supabase
         .from('player_stats')
         .select('*')
         .eq('player_name', decodedPlayerName)
         .in('player_team', league.teams)
         .order('timestamp', { ascending: false })
 
-      if (statsError) throw statsError
+      if (playerStatsError) throw playerStatsError
 
-      if (!data || data.length === 0) {
+      // Fetch all player stats for all players in teams from this league (for league averages)
+      const { data: leagueData, error: leagueStatsError } = await supabase
+        .from('player_stats')
+        .select('*')
+        .in('player_team', league.teams)
+
+      if (leagueStatsError) throw leagueStatsError
+
+      if (!playerData || playerData.length === 0) {
         setAggregatedStats(null)
         setGameStats([])
+        setLeagueAverages(null)
         return
       }
 
-      const stats = data as PlayerStat[]
+      const playerStats = playerData as PlayerStat[]
 
       // Aggregate stats for summary
-      const aggregated = aggregatePlayerStats(stats)
+      const aggregated = aggregatePlayerStats(playerStats)
       setAggregatedStats(aggregated)
 
       // Group by game for game-by-game table
-      const gameStatsList = groupStatsByGame(stats)
+      const gameStatsList = groupStatsByGame(playerStats)
       setGameStats(gameStatsList)
+
+      // Calculate league averages
+      if (leagueData && leagueData.length > 0) {
+        const leagueStats = leagueData as PlayerStat[]
+        const leagueAvg = calculateLeagueAverages(leagueStats)
+        setLeagueAverages(leagueAvg)
+      }
     } catch (err: any) {
       console.error('Error loading player stats:', err)
       setError(err.message || 'Failed to load player stats')
@@ -195,6 +221,130 @@ export default function PlayerDetail() {
       avg_assists: games_played > 0 ? total_assists / games_played : 0,
       avg_ds: games_played > 0 ? total_ds / games_played : 0,
       avg_turnovers: games_played > 0 ? total_turnovers / games_played : 0,
+    }
+  }
+
+  const calculateLeagueAverages = (allStats: PlayerStat[]): LeagueAverages => {
+    // Aggregate stats per player (same logic as aggregatePlayerStats)
+    const playerMap = new Map<string, {
+      games: Set<string>
+      total_goals: number
+      total_assists: number
+      total_ds: number
+      total_drops: number
+      total_throwaways: number
+    }>()
+
+    allStats.forEach(stat => {
+      const gameKey = `${stat.tournament_played}|${stat.game_played}`
+      
+      if (!playerMap.has(stat.player_name)) {
+        playerMap.set(stat.player_name, {
+          games: new Set(),
+          total_goals: 0,
+          total_assists: 0,
+          total_ds: 0,
+          total_drops: 0,
+          total_throwaways: 0,
+        })
+      }
+
+      const player = playerMap.get(stat.player_name)!
+      player.games.add(gameKey)
+      player.total_goals += stat.goals
+      player.total_assists += stat.assists
+      player.total_ds += stat.ds
+      player.total_drops += stat.drops
+      player.total_throwaways += stat.throwaways
+    })
+
+    // Calculate per-player averages and totals, then average those
+    let sumAvgScorePerGame = 0
+    let sumAvgGoals = 0
+    let sumAvgAssists = 0
+    let sumAvgDs = 0
+    let sumAvgTurnovers = 0
+    let sumGamesPlayed = 0
+    let sumTotalScore = 0
+    let sumTotalGoals = 0
+    let sumTotalAssists = 0
+    let sumTotalDs = 0
+    let sumTotalTurnovers = 0
+    let count = 0
+
+    playerMap.forEach(player => {
+      const games_played = player.games.size
+      if (games_played === 0) return
+
+      const total_turnovers = player.total_drops + player.total_throwaways
+      const total_score = calculateFantasyScore(
+        player.total_goals,
+        player.total_assists,
+        player.total_ds,
+        player.total_drops,
+        player.total_throwaways
+      )
+
+      sumGamesPlayed += games_played
+      sumAvgScorePerGame += total_score / games_played
+      sumAvgGoals += player.total_goals / games_played
+      sumAvgAssists += player.total_assists / games_played
+      sumAvgDs += player.total_ds / games_played
+      sumAvgTurnovers += total_turnovers / games_played
+      sumTotalScore += total_score
+      sumTotalGoals += player.total_goals
+      sumTotalAssists += player.total_assists
+      sumTotalDs += player.total_ds
+      sumTotalTurnovers += total_turnovers
+      count++
+    })
+
+    if (count === 0) {
+      return {
+        player_name: '',
+        player_team: '',
+        games_played: 0,
+        total_goals: 0,
+        total_assists: 0,
+        total_ds: 0,
+        total_drops: 0,
+        total_throwaways: 0,
+        total_turnovers: 0,
+        total_score: 0,
+        avg_score_per_game: 0,
+        avg_goals: 0,
+        avg_assists: 0,
+        avg_ds: 0,
+        avg_turnovers: 0,
+        avg_total_score: 0,
+        avg_total_goals: 0,
+        avg_total_assists: 0,
+        avg_total_ds: 0,
+        avg_total_turnovers: 0,
+      }
+    }
+
+    return {
+      player_name: '',
+      player_team: '',
+      games_played: sumGamesPlayed / count,
+      total_goals: 0,
+      total_assists: 0,
+      total_ds: 0,
+      total_drops: 0,
+      total_throwaways: 0,
+      total_turnovers: 0,
+      total_score: 0,
+      avg_score_per_game: sumAvgScorePerGame / count,
+      avg_goals: sumAvgGoals / count,
+      avg_assists: sumAvgAssists / count,
+      avg_ds: sumAvgDs / count,
+      avg_turnovers: sumAvgTurnovers / count,
+      avg_total_score: sumTotalScore / count,
+      avg_total_goals: sumTotalGoals / count,
+      avg_total_assists: sumTotalAssists / count,
+      avg_total_ds: sumTotalDs / count,
+      avg_total_turnovers: sumTotalTurnovers / count,
     }
   }
 
@@ -308,100 +458,253 @@ export default function PlayerDetail() {
           <div className="no-data-text">No stats available for this player.</div>
         ) : (
           <>
-            {/* Summary Stats Section */}
-            <section className="player-stats-summary">
-              <h2 className="section-title">Season Summary</h2>
-              <div className="stats-grid">
-                <div className="stat-card">
-                  <div className="stat-label">Games Played</div>
-                  <div className="stat-value">{aggregatedStats.games_played}</div>
-                </div>
-                <div className="stat-card">
-                  <div className="stat-label">Total Score</div>
-                  <div className="stat-value">{aggregatedStats.total_score.toFixed(1)}</div>
-                </div>
-                <div className="stat-card">
-                  <div className="stat-label">Avg Score/Game</div>
-                  <div className="stat-value">{aggregatedStats.avg_score_per_game.toFixed(1)}</div>
-                </div>
-                <div className="stat-card">
-                  <div className="stat-label">Total Goals</div>
-                  <div className="stat-value">{aggregatedStats.total_goals}</div>
-                </div>
-                <div className="stat-card">
-                  <div className="stat-label">Total Assists</div>
-                  <div className="stat-value">{aggregatedStats.total_assists}</div>
-                </div>
-                <div className="stat-card">
-                  <div className="stat-label">Total Ds</div>
-                  <div className="stat-value">{aggregatedStats.total_ds}</div>
-                </div>
-                <div className="stat-card">
-                  <div className="stat-label">Avg Goals</div>
-                  <div className="stat-value">{aggregatedStats.avg_goals.toFixed(1)}</div>
-                </div>
-                <div className="stat-card">
-                  <div className="stat-label">Avg Assists</div>
-                  <div className="stat-value">{aggregatedStats.avg_assists.toFixed(1)}</div>
-                </div>
-                <div className="stat-card">
-                  <div className="stat-label">Avg Ds</div>
-                  <div className="stat-value">{aggregatedStats.avg_ds.toFixed(1)}</div>
-                </div>
-                <div className="stat-card">
-                  <div className="stat-label">Total Turnovers</div>
-                  <div className="stat-value">{aggregatedStats.total_turnovers}</div>
-                </div>
-                <div className="stat-card">
-                  <div className="stat-label">Avg Turnovers</div>
-                  <div className="stat-value">{aggregatedStats.avg_turnovers.toFixed(1)}</div>
-                </div>
-              </div>
-            </section>
+            {/* View Toggle */}
+            <div className="view-toggle-container">
+              <button
+                className={`view-toggle-button ${activeView === 'summary' ? 'active' : ''}`}
+                onClick={() => setActiveView('summary')}
+              >
+                Season Summary
+              </button>
+              <button
+                className={`view-toggle-button ${activeView === 'games' ? 'active' : ''}`}
+                onClick={() => setActiveView('games')}
+              >
+                Game-by-Game Analysis
+              </button>
+            </div>
 
-            {/* Game-by-Game Table */}
-            <section className="player-games-section">
-              <h2 className="section-title">Game-by-Game Performance</h2>
-              {gameStats.length === 0 ? (
-                <div className="no-data-text">No game data available.</div>
-              ) : (
-                <div className="games-table-container">
-                  <table className="games-table">
+            {/* Summary Stats Section */}
+            {activeView === 'summary' && (
+              <section className="player-stats-summary">
+                <h2 className="section-title">Season Summary</h2>
+                <div className="summary-table-container">
+                  <table className="summary-table">
                     <thead>
                       <tr>
-                        <th>Tournament</th>
-                        <th>Opponent</th>
-                        <th>Goals</th>
-                        <th>Assists</th>
-                        <th>Ds</th>
-                        <th>Drops</th>
-                        <th>Throwaways</th>
-                        <th>Turnovers</th>
-                        <th>Score</th>
+                        <th>Stat</th>
+                        <th>Player</th>
+                        <th>League Avg</th>
+                        <th>Difference</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {gameStats.map((game, index) => (
-                        <tr 
-                          key={`${game.tournament}-${game.opponent}-${index}`}
-                          className={index % 2 === 0 ? 'row-even' : 'row-odd'}
-                        >
-                          <td>{game.tournament}</td>
-                          <td>{game.opponent}</td>
-                          <td>{game.goals}</td>
-                          <td>{game.assists}</td>
-                          <td>{game.ds}</td>
-                          <td>{game.drops}</td>
-                          <td>{game.throwaways}</td>
-                          <td>{game.turnovers}</td>
-                          <td className="score-cell">{game.score.toFixed(1)}</td>
-                        </tr>
-                      ))}
+                      <tr className="row-even">
+                        <td className="stat-name">Games Played</td>
+                        <td className="stat-value-cell">{aggregatedStats.games_played}</td>
+                        <td className="stat-league-cell">
+                          {leagueAverages ? leagueAverages.games_played.toFixed(1) : '-'}
+                        </td>
+                        <td className="stat-diff-cell">
+                          {leagueAverages && (
+                            <span className={`stat-diff-inline ${aggregatedStats.games_played >= leagueAverages.games_played ? 'positive' : 'negative'}`}>
+                              {aggregatedStats.games_played >= leagueAverages.games_played ? '+' : ''}
+                              {(aggregatedStats.games_played - leagueAverages.games_played).toFixed(1)}
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                      <tr className="row-odd">
+                        <td className="stat-name">Total Score</td>
+                        <td className="stat-value-cell">{aggregatedStats.total_score.toFixed(1)}</td>
+                        <td className="stat-league-cell">
+                          {leagueAverages ? leagueAverages.avg_total_score.toFixed(1) : '-'}
+                        </td>
+                        <td className="stat-diff-cell">
+                          {leagueAverages && (
+                            <span className={`stat-diff-inline ${aggregatedStats.total_score >= leagueAverages.avg_total_score ? 'positive' : 'negative'}`}>
+                              {aggregatedStats.total_score >= leagueAverages.avg_total_score ? '+' : ''}
+                              {(aggregatedStats.total_score - leagueAverages.avg_total_score).toFixed(1)}
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                      <tr className="row-even">
+                        <td className="stat-name">Avg Score/Game</td>
+                        <td className="stat-value-cell">{aggregatedStats.avg_score_per_game.toFixed(1)}</td>
+                        <td className="stat-league-cell">
+                          {leagueAverages ? leagueAverages.avg_score_per_game.toFixed(1) : '-'}
+                        </td>
+                        <td className="stat-diff-cell">
+                          {leagueAverages && (
+                            <span className={`stat-diff-inline ${aggregatedStats.avg_score_per_game >= leagueAverages.avg_score_per_game ? 'positive' : 'negative'}`}>
+                              {aggregatedStats.avg_score_per_game >= leagueAverages.avg_score_per_game ? '+' : ''}
+                              {(aggregatedStats.avg_score_per_game - leagueAverages.avg_score_per_game).toFixed(1)}
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                      <tr className="row-odd">
+                        <td className="stat-name">Total Goals</td>
+                        <td className="stat-value-cell">{aggregatedStats.total_goals}</td>
+                        <td className="stat-league-cell">
+                          {leagueAverages ? leagueAverages.avg_total_goals.toFixed(1) : '-'}
+                        </td>
+                        <td className="stat-diff-cell">
+                          {leagueAverages && (
+                            <span className={`stat-diff-inline ${aggregatedStats.total_goals >= leagueAverages.avg_total_goals ? 'positive' : 'negative'}`}>
+                              {aggregatedStats.total_goals >= leagueAverages.avg_total_goals ? '+' : ''}
+                              {(aggregatedStats.total_goals - leagueAverages.avg_total_goals).toFixed(0)}
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                      <tr className="row-even">
+                        <td className="stat-name">Avg Goals</td>
+                        <td className="stat-value-cell">{aggregatedStats.avg_goals.toFixed(1)}</td>
+                        <td className="stat-league-cell">
+                          {leagueAverages ? leagueAverages.avg_goals.toFixed(1) : '-'}
+                        </td>
+                        <td className="stat-diff-cell">
+                          {leagueAverages && (
+                            <span className={`stat-diff-inline ${aggregatedStats.avg_goals >= leagueAverages.avg_goals ? 'positive' : 'negative'}`}>
+                              {aggregatedStats.avg_goals >= leagueAverages.avg_goals ? '+' : ''}
+                              {(aggregatedStats.avg_goals - leagueAverages.avg_goals).toFixed(1)}
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                      <tr className="row-odd">
+                        <td className="stat-name">Total Assists</td>
+                        <td className="stat-value-cell">{aggregatedStats.total_assists}</td>
+                        <td className="stat-league-cell">
+                          {leagueAverages ? leagueAverages.avg_total_assists.toFixed(1) : '-'}
+                        </td>
+                        <td className="stat-diff-cell">
+                          {leagueAverages && (
+                            <span className={`stat-diff-inline ${aggregatedStats.total_assists >= leagueAverages.avg_total_assists ? 'positive' : 'negative'}`}>
+                              {aggregatedStats.total_assists >= leagueAverages.avg_total_assists ? '+' : ''}
+                              {(aggregatedStats.total_assists - leagueAverages.avg_total_assists).toFixed(0)}
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                      <tr className="row-even">
+                        <td className="stat-name">Avg Assists</td>
+                        <td className="stat-value-cell">{aggregatedStats.avg_assists.toFixed(1)}</td>
+                        <td className="stat-league-cell">
+                          {leagueAverages ? leagueAverages.avg_assists.toFixed(1) : '-'}
+                        </td>
+                        <td className="stat-diff-cell">
+                          {leagueAverages && (
+                            <span className={`stat-diff-inline ${aggregatedStats.avg_assists >= leagueAverages.avg_assists ? 'positive' : 'negative'}`}>
+                              {aggregatedStats.avg_assists >= leagueAverages.avg_assists ? '+' : ''}
+                              {(aggregatedStats.avg_assists - leagueAverages.avg_assists).toFixed(1)}
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                      <tr className="row-odd">
+                        <td className="stat-name">Total Ds</td>
+                        <td className="stat-value-cell">{aggregatedStats.total_ds}</td>
+                        <td className="stat-league-cell">
+                          {leagueAverages ? leagueAverages.avg_total_ds.toFixed(1) : '-'}
+                        </td>
+                        <td className="stat-diff-cell">
+                          {leagueAverages && (
+                            <span className={`stat-diff-inline ${aggregatedStats.total_ds >= leagueAverages.avg_total_ds ? 'positive' : 'negative'}`}>
+                              {aggregatedStats.total_ds >= leagueAverages.avg_total_ds ? '+' : ''}
+                              {(aggregatedStats.total_ds - leagueAverages.avg_total_ds).toFixed(0)}
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                      <tr className="row-even">
+                        <td className="stat-name">Avg Ds</td>
+                        <td className="stat-value-cell">{aggregatedStats.avg_ds.toFixed(1)}</td>
+                        <td className="stat-league-cell">
+                          {leagueAverages ? leagueAverages.avg_ds.toFixed(1) : '-'}
+                        </td>
+                        <td className="stat-diff-cell">
+                          {leagueAverages && (
+                            <span className={`stat-diff-inline ${aggregatedStats.avg_ds >= leagueAverages.avg_ds ? 'positive' : 'negative'}`}>
+                              {aggregatedStats.avg_ds >= leagueAverages.avg_ds ? '+' : ''}
+                              {(aggregatedStats.avg_ds - leagueAverages.avg_ds).toFixed(1)}
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                      <tr className="row-odd">
+                        <td className="stat-name">Total Turnovers</td>
+                        <td className="stat-value-cell">{aggregatedStats.total_turnovers}</td>
+                        <td className="stat-league-cell">
+                          {leagueAverages ? leagueAverages.avg_total_turnovers.toFixed(1) : '-'}
+                        </td>
+                        <td className="stat-diff-cell">
+                          {leagueAverages && (
+                            <span className={`stat-diff-inline ${aggregatedStats.total_turnovers <= leagueAverages.avg_total_turnovers ? 'positive' : 'negative'}`}>
+                              {aggregatedStats.total_turnovers <= leagueAverages.avg_total_turnovers ? '' : '+'}
+                              {(aggregatedStats.total_turnovers - leagueAverages.avg_total_turnovers).toFixed(0)}
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                      <tr className="row-even">
+                        <td className="stat-name">Avg Turnovers</td>
+                        <td className="stat-value-cell">{aggregatedStats.avg_turnovers.toFixed(1)}</td>
+                        <td className="stat-league-cell">
+                          {leagueAverages ? leagueAverages.avg_turnovers.toFixed(1) : '-'}
+                        </td>
+                        <td className="stat-diff-cell">
+                          {leagueAverages && (
+                            <span className={`stat-diff-inline ${aggregatedStats.avg_turnovers <= leagueAverages.avg_turnovers ? 'positive' : 'negative'}`}>
+                              {aggregatedStats.avg_turnovers <= leagueAverages.avg_turnovers ? '' : '+'}
+                              {(aggregatedStats.avg_turnovers - leagueAverages.avg_turnovers).toFixed(1)}
+                            </span>
+                          )}
+                        </td>
+                      </tr>
                     </tbody>
                   </table>
                 </div>
-              )}
-            </section>
+              </section>
+            )}
+
+            {/* Game-by-Game Table */}
+            {activeView === 'games' && (
+              <section className="player-games-section">
+                <h2 className="section-title">Game-by-Game Performance</h2>
+                {gameStats.length === 0 ? (
+                  <div className="no-data-text">No game data available.</div>
+                ) : (
+                  <div className="games-table-container">
+                    <table className="games-table">
+                      <thead>
+                        <tr>
+                          <th>Tournament</th>
+                          <th>Opponent</th>
+                          <th>Goals</th>
+                          <th>Assists</th>
+                          <th>Ds</th>
+                          <th>Drops</th>
+                          <th>Throwaways</th>
+                          <th>Turnovers</th>
+                          <th>Score</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {gameStats.map((game, index) => (
+                          <tr 
+                            key={`${game.tournament}-${game.opponent}-${index}`}
+                            className={index % 2 === 0 ? 'row-even' : 'row-odd'}
+                          >
+                            <td>{game.tournament}</td>
+                            <td>{game.opponent}</td>
+                            <td>{game.goals}</td>
+                            <td>{game.assists}</td>
+                            <td>{game.ds}</td>
+                            <td>{game.drops}</td>
+                            <td>{game.throwaways}</td>
+                            <td>{game.turnovers}</td>
+                            <td className="score-cell">{game.score.toFixed(1)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </section>
+            )}
           </>
         )}
       </main>
